@@ -128,3 +128,23 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Node modules (dependencies)
+node_modules/
+
+# Hardhat build artifacts and cache
+artifacts/
+cache/
+
+# Environment variables and secret keys
+.env
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional: Editor or OS-specific files
+.DS_Store
+Thumbs.db
+.vscode/
