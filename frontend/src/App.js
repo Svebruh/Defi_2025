@@ -5,8 +5,8 @@ import PokemonCardNFTArtifact from "./abi/PokemonCardNFT.json";
 import PokemonCardMarketArtifact from "./abi/PokemonCardMarket.json";
 
 // Replace with your deployed contract addresses
-const nftAddress = "DEPLOYED_NFT_ADDRESS";
-const marketAddress = "DEPLOYED_MARKET_ADDRESS";
+const nftAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const marketAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 function App() {
   const [account, setAccount] = useState(null);

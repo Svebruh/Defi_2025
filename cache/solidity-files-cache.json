@@ -639,8 +639,8 @@
       ]
     },
     "/home/sven/ETH/Defi_2025/Defi_2025/contracts/PokemonCardMarket.sol": {
-      "lastModificationDate": 1741085068236,
-      "contentHash": "7a4ef4d1b77596c21dc882229c31e77e",
+      "lastModificationDate": 1741101817786,
+      "contentHash": "9d18f3c2f393e3f64eb3185d9466c660",
       "sourceName": "contracts/PokemonCardMarket.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -678,8 +678,8 @@
       ]
     },
     "/home/sven/ETH/Defi_2025/Defi_2025/contracts/PokemonCardNFT.sol": {
-      "lastModificationDate": 1741085078975,
-      "contentHash": "2e376164e9f86dc9457a30515b98eaed",
+      "lastModificationDate": 1741101800996,
+      "contentHash": "abc694c93f8f1104dcb2fbe68e26eba2",
       "sourceName": "contracts/PokemonCardNFT.sol",
       "solcConfig": {
         "version": "0.8.28",
