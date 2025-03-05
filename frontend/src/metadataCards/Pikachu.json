@@ -1,0 +1,11 @@
+{
+    "name": "Pikachu",
+    "description": "An Electric-type Pokémon",
+    "image": "https://your-storage.com/images/pikachu.png",
+    "attributes": [
+      { "trait_type": "HP", "value": "60" },
+      { "trait_type": "Attack", "value": "55" },
+      { "trait_type": "Defense", "value": "40" }
+    ]
+  }
+  

@@ -3,6 +3,10 @@ import React, { useState, useEffect } from "react";
 import { ethers, parseEther } from "ethers"; // Removed Web3Provider
 import PokemonCardNFTArtifact from "./abi/PokemonCardNFT.json";
 import PokemonCardMarketArtifact from "./abi/PokemonCardMarket.json";
+import MintCard from "./MintCard";
+import ListCard from "./ListCard";
+
+
 
 // Replace with your deployed contract addresses
 const nftAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
@@ -89,6 +93,10 @@ function App() {
           ))
         )}
       </section>
+      {nftContract && account && (
+        <MintCard nftContract={nftContract} account={account} />
+      )}
+      {marketContract && <ListCard marketContract={marketContract} />}
     </div>
   );
 }
