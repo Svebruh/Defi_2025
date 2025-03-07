@@ -5,6 +5,7 @@ import PokemonCardNFTArtifact from "./abi/PokemonCardNFT.json";
 import PokemonCardMarketArtifact from "./abi/PokemonCardMarket.json";
 import MintCard from "./MintCard";
 import ListCard from "./ListCard";
+import Inventory from "./Inventory";
 
 
 
@@ -94,7 +95,10 @@ function App() {
         )}
       </section>
       {nftContract && account && (
-        <MintCard nftContract={nftContract} account={account} />
+        <>
+          <MintCard nftContract={nftContract} account={account} />
+          <Inventory nftContract={nftContract} account={account} />
+        </>
       )}
       {marketContract && <ListCard marketContract={marketContract} />}
     </div>
