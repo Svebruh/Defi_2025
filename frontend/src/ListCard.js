@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { ethers, parseEther } from "ethers";
 
-function ListCard({ marketContract }) {
+function ListCard({ marketContract, nftContract, marketAddress }) {
   const [tokenId, setTokenId] = useState("");
   const [price, setPrice] = useState("");
   const [isAuction, setIsAuction] = useState(false);
@@ -11,17 +11,25 @@ function ListCard({ marketContract }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!marketContract) {
-      setStatus("Marketplace contract not loaded");
+    if (!marketContract || !nftContract) {
+      setStatus("Contracts not loaded");
       return;
     }
 
     try {
-      setStatus("Listing card...");
+      setStatus("Checking NFT approval...");
+      // Check if the NFT is already approved for the marketplace
+      const approvedAddress = await nftContract.getApproved(tokenId);
+      if (approvedAddress.toLowerCase() !== marketAddress.toLowerCase()) {
+        setStatus("Approving NFT for marketplace...");
+        const approveTx = await nftContract.approve(marketAddress, tokenId);
+        await approveTx.wait();
+        setStatus("NFT approved. Proceeding with listing...");
+      }
+
       // Convert price from ETH to wei
       const priceInWei = parseEther(price);
       // Call listItem on the marketplace contract.
-      // Ensure that the NFT has been approved for transfer by this contract.
       const tx = await marketContract.listItem(
         tokenId,
         priceInWei,
