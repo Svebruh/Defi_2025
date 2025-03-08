@@ -1,16 +1,88 @@
 // src/Marketplace.js
 import React, { useState, useEffect } from "react";
-import { ethers } from "ethers";
+import { ethers, parseEther } from "ethers";
+
+function ListingItem({ listing, marketContract, refreshListings }) {
+  const [bidValue, setBidValue] = useState("");
+  const [status, setStatus] = useState("");
+
+  // Function to handle buying a fixed-price listing
+  const handleBuy = async () => {
+    try {
+      setStatus("Processing purchase...");
+      // Call buyItem with the tokenId and send the fixed price as value
+      const tx = await marketContract.buyItem(listing.tokenId, {
+        value: parseEther(listing.price),
+      });
+      await tx.wait();
+      setStatus("Purchase successful!");
+      refreshListings(); // Optionally refresh the listings
+    } catch (error) {
+      console.error("Error buying item:", error);
+      setStatus("Purchase failed.");
+    }
+  };
+
+  // Function to handle bidding for an auction listing
+  const handleBid = async () => {
+    try {
+      setStatus("Placing bid...");
+      // Call bid with the tokenId and send the bid amount as value
+      const tx = await marketContract.bid(listing.tokenId, {
+        value: parseEther(bidValue),
+      });
+      await tx.wait();
+      setStatus("Bid placed successfully!");
+      refreshListings(); // Optionally refresh the listings
+    } catch (error) {
+      console.error("Error placing bid:", error);
+      setStatus("Bid failed.");
+    }
+  };
+
+  return (
+    <li style={{ marginBottom: "20px", border: "1px solid #ccc", padding: "10px" }}>
+      <p>
+        <strong>Token ID:</strong> {listing.tokenId}
+      </p>
+      <p>
+        <strong>Seller:</strong> {listing.seller}
+      </p>
+      <p>
+        <strong>Price:</strong> {listing.price} ETH
+      </p>
+      {listing.isAuction ? (
+        <>
+          <p>
+            <strong>Auction Ends:</strong> {listing.auctionEnd}
+          </p>
+          <div>
+            <input
+              type="text"
+              placeholder="Bid amount (ETH)"
+              value={bidValue}
+              onChange={(e) => setBidValue(e.target.value)}
+            />
+            <button onClick={handleBid}>Place Bid</button>
+          </div>
+        </>
+      ) : (
+        <button onClick={handleBuy}>Buy NFT</button>
+      )}
+      {status && <p>Status: {status}</p>}
+    </li>
+  );
+}
 
 function Marketplace({ marketContract, nftContract }) {
   const [listings, setListings] = useState([]);
 
-  // Function to fetch past "Listed" events
+  // Fetch past "Listed" events from the marketplace
   const fetchListings = async () => {
     if (!marketContract) return;
     try {
-      // Query past Listed events; adjust the filter parameters as needed
       const events = await marketContract.queryFilter("Listed");
+      // Map each event to a listing object and format values (price in ETH)
       const formattedListings = events.map((event) => ({
         seller: event.args.seller,
         nftAddress: event.args.nftAddress,
@@ -27,10 +99,8 @@ function Marketplace({ marketContract, nftContract }) {
 
   useEffect(() => {
     if (marketContract) {
-      // Fetch past listings on component mount
       fetchListings();
-
-      // Listen for new "Listed" events and update the listings state
+      // Listen for new "Listed" events to update the UI in real time.
       marketContract.on(
         "Listed",
         (seller, nftAddress, tokenId, price, isAuction, auctionEnd) => {
@@ -45,8 +115,6 @@ function Marketplace({ marketContract, nftContract }) {
           setListings((prev) => [...prev, newListing]);
         }
       );
-
-      // Cleanup the event listener when component unmounts
       return () => {
         marketContract.removeAllListeners("Listed");
       };
@@ -59,24 +127,14 @@ function Marketplace({ marketContract, nftContract }) {
       {listings.length === 0 ? (
         <p>No listings available.</p>
       ) : (
-        <ul>
+        <ul style={{ listStyle: "none", padding: 0 }}>
           {listings.map((listing, index) => (
-            <li key={index}>
-              <p>
-                <strong>Token ID:</strong> {listing.tokenId}
-              </p>
-              <p>
-                <strong>Seller:</strong> {listing.seller}
-              </p>
-              <p>
-                <strong>Price:</strong> {listing.price} ETH
-              </p>
-              {listing.isAuction && (
-                <p>
-                  <strong>Auction Ends:</strong> {listing.auctionEnd}
-                </p>
-              )}
-            </li>
+            <ListingItem
+              key={index}
+              listing={listing}
+              marketContract={marketContract}
+              refreshListings={fetchListings}
+            />
           ))}
         </ul>
       )}
