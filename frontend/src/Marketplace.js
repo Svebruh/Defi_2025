@@ -10,13 +10,12 @@ function ListingItem({ listing, marketContract, refreshListings }) {
   const handleBuy = async () => {
     try {
       setStatus("Processing purchase...");
-      // Call buyItem with the tokenId and send the fixed price as value
       const tx = await marketContract.buyItem(listing.tokenId, {
-        value: parseEther(listing.price),
+        value: ethers.parseEther(listing.price),
       });
       await tx.wait();
       setStatus("Purchase successful!");
-      refreshListings(); // Optionally refresh the listings
+      refreshListings();
     } catch (error) {
       console.error("Error buying item:", error);
       setStatus("Purchase failed.");
@@ -27,13 +26,12 @@ function ListingItem({ listing, marketContract, refreshListings }) {
   const handleBid = async () => {
     try {
       setStatus("Placing bid...");
-      // Call bid with the tokenId and send the bid amount as value
       const tx = await marketContract.bid(listing.tokenId, {
-        value: parseEther(bidValue),
+        value: ethers.parseEther(bidValue),
       });
       await tx.wait();
       setStatus("Bid placed successfully!");
-      refreshListings(); // Optionally refresh the listings
+      refreshListings();
     } catch (error) {
       console.error("Error placing bid:", error);
       setStatus("Bid failed.");
@@ -77,21 +75,45 @@ function ListingItem({ listing, marketContract, refreshListings }) {
 function Marketplace({ marketContract, nftContract }) {
   const [listings, setListings] = useState([]);
 
-  // Fetch past "Listed" events from the marketplace
   const fetchListings = async () => {
     if (!marketContract) return;
     try {
-      const events = await marketContract.queryFilter("Listed");
-      // Map each event to a listing object and format values (price in ETH)
-      const formattedListings = events.map((event) => ({
-        seller: event.args.seller,
-        nftAddress: event.args.nftAddress,
-        tokenId: event.args.tokenId.toString(),
-        price: ethers.formatEther(event.args.price),
-        isAuction: event.args.isAuction,
-        auctionEnd: event.args.auctionEnd.toString(),
-      }));
-      setListings(formattedListings);
+      // Query both Listed and Sale events
+      const listedEvents = await marketContract.queryFilter("Listed");
+      const saleEvents = await marketContract.queryFilter("Sale");
+
+      // Combine events with a type tag
+      let allEvents = [];
+      listedEvents.forEach((event) => {
+        allEvents.push({ type: "Listed", event });
+      });
+      saleEvents.forEach((event) => {
+        allEvents.push({ type: "Sale", event });
+      });
+
+      // Sort events by blockNumber in ascending order
+      allEvents.sort((a, b) => a.event.blockNumber - b.event.blockNumber);
+
+      // Build a mapping of tokenId -> latest event data
+      const latestState = {};
+      allEvents.forEach((item) => {
+        const tokenId = item.event.args.tokenId.toString();
+        latestState[tokenId] = item; // later events overwrite earlier ones
+      });
+
+      // Filter only tokens whose latest event is "Listed"
+      const activeListings = Object.values(latestState)
+        .filter((item) => item.type === "Listed")
+        .map((item) => ({
+          seller: item.event.args.seller,
+          nftAddress: item.event.args.nftAddress,
+          tokenId: item.event.args.tokenId.toString(),
+          price: ethers.formatEther(item.event.args.price),
+          isAuction: item.event.args.isAuction,
+          auctionEnd: item.event.args.auctionEnd.toString(),
+        }));
+
+      setListings(activeListings);
     } catch (error) {
       console.error("Error fetching marketplace listings:", error);
     }
@@ -100,23 +122,18 @@ function Marketplace({ marketContract, nftContract }) {
   useEffect(() => {
     if (marketContract) {
       fetchListings();
-      // Listen for new "Listed" events to update the UI in real time.
-      marketContract.on(
-        "Listed",
-        (seller, nftAddress, tokenId, price, isAuction, auctionEnd) => {
-          const newListing = {
-            seller,
-            nftAddress,
-            tokenId: tokenId.toString(),
-            price: ethers.formatEther(price),
-            isAuction,
-            auctionEnd: auctionEnd.toString(),
-          };
-          setListings((prev) => [...prev, newListing]);
-        }
-      );
+
+      // Listen for both Listed and Sale events
+      const handleNewEvent = () => {
+        fetchListings();
+      };
+
+      marketContract.on("Listed", handleNewEvent);
+      marketContract.on("Sale", handleNewEvent);
+
       return () => {
-        marketContract.removeAllListeners("Listed");
+        marketContract.removeListener("Listed", handleNewEvent);
+        marketContract.removeListener("Sale", handleNewEvent);
       };
     }
   }, [marketContract]);

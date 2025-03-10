@@ -7,6 +7,7 @@ import MintCard from "./MintCard";
 import ListCard from "./ListCard";
 import Inventory from "./Inventory";
 import Marketplace from "./Marketplace";
+import WithdrawFunds from "./WithdrawFunds";
 
 // Replace with your deployed contract addresses
 const nftAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
@@ -58,6 +59,7 @@ function App() {
         <>
           <ListCard marketContract={marketContract} nftContract={nftContract} marketAddress={marketAddress} />
           <Marketplace marketContract={marketContract} nftContract={nftContract} />
+          <WithdrawFunds marketContract={marketContract} />
         </>
       )}
     </div>
