@@ -58,7 +58,7 @@ function App() {
       {marketContract && (
         <>
           <ListCard marketContract={marketContract} nftContract={nftContract} marketAddress={marketAddress} />
-          <Marketplace marketContract={marketContract} nftContract={nftContract} />
+          <Marketplace marketContract={marketContract} nftContract={nftContract} nftAddress={nftAddress} />
           <WithdrawFunds marketContract={marketContract} />
         </>
       )}
