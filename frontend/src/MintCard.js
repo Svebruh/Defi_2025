@@ -1,12 +1,10 @@
 // src/MintCard.js
 import React, { useState } from "react";
-import { ethers } from "ethers";
+import { Card, CardContent, CardActions, Typography, Button, Box } from "@mui/material";
 
 function MintCard({ nftContract, account }) {
   const [status, setStatus] = useState("");
 
-  // Define metadata for three different Pokémon cards.
-  // In a real project, these tokenURI values should point to your hosted JSON metadata.
   const cards = [
     {
       name: "Pikachu",
@@ -29,8 +27,6 @@ function MintCard({ nftContract, account }) {
     }
     try {
       setStatus("Minting...");
-      // Call the mint function on your NFT contract.
-      // This function is secured with onlyOwner, so the connected account must be the owner.
       const tx = await nftContract.mint(account, tokenURI);
       await tx.wait();
       setStatus("Minting successful!");
@@ -41,18 +37,24 @@ function MintCard({ nftContract, account }) {
   };
 
   return (
-    <div style={{ padding: "20px", border: "1px solid #ccc", marginTop: "20px" }}>
-      <h2>Mint Pokémon Cards</h2>
-      {status && <p>Status: {status}</p>}
-      {cards.map((card, index) => (
-        <div key={index} style={{ marginBottom: "10px" }}>
-          <p>
-            <strong>{card.name}</strong>
-          </p>
-          <button onClick={() => mintCard(card.tokenURI)}>Mint {card.name}</button>
-        </div>
-      ))}
-    </div>
+    <Box>
+      {status && (
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Status: {status}
+        </Typography>
+      )}
+      <Box sx={{ display: "flex", gap: 2 }}>
+        {cards.map((card, index) => (
+          <Button
+            key={index}
+            variant="contained"
+            onClick={() => mintCard(card.tokenURI)}
+          >
+            Mint {card.name}
+          </Button>
+        ))}
+      </Box>
+    </Box>
   );
 }
 

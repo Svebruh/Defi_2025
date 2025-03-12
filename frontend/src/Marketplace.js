@@ -1,8 +1,18 @@
 // src/Marketplace.js
 import React, { useState, useEffect } from "react";
 import { ethers, parseEther } from "ethers";
+import {
+  Container,
+  Paper,
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+} from "@mui/material";
 
-// Component for fixed-price listings
+// Fixed-price listing subcomponent
 function FixedPriceListingItem({ listing, marketContract, refreshListings }) {
   const [status, setStatus] = useState("");
 
@@ -22,30 +32,38 @@ function FixedPriceListingItem({ listing, marketContract, refreshListings }) {
   };
 
   return (
-    <li style={{ marginBottom: "20px", border: "1px solid #ccc", padding: "10px" }}>
-      <p>
-        <strong>Token ID:</strong> {listing.tokenId}
-      </p>
-      <p>
-        <strong>Seller:</strong> {listing.seller}
-      </p>
-      <p>
-        <strong>Price:</strong> {listing.price} ETH
-      </p>
-      <button onClick={handleBuy}>Buy NFT</button>
-      {status && <p>Status: {status}</p>}
-    </li>
+    <Card sx={{ mb: 2 }}>
+      <CardContent>
+        <Typography variant="subtitle1">
+          <strong>Token ID:</strong> {listing.tokenId}
+        </Typography>
+        <Typography variant="body2">
+          <strong>Seller:</strong> {listing.seller}
+        </Typography>
+        <Typography variant="body2">
+          <strong>Price:</strong> {listing.price} ETH
+        </Typography>
+        <Button variant="contained" onClick={handleBuy} sx={{ mt: 1 }}>
+          Buy NFT
+        </Button>
+        {status && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {status}
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-// Component for auction listings
+// Auction listing subcomponent
 function AuctionListingItem({ listing, marketContract, refreshListings, nftAddress }) {
   const [bidValue, setBidValue] = useState("");
   const [status, setStatus] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
   const [currentHighestBid, setCurrentHighestBid] = useState("0");
 
-  // Update the countdown timer
+  // Update countdown timer
   useEffect(() => {
     const updateTimer = () => {
       const now = Math.floor(Date.now() / 1000);
@@ -57,10 +75,9 @@ function AuctionListingItem({ listing, marketContract, refreshListings, nftAddre
     return () => clearInterval(interval);
   }, [listing.auctionEnd]);
 
-  // Fetch updated auction data (highest bid) from the contract
+  // Fetch the latest auction data (current highest bid)
   const fetchAuctionData = async () => {
     try {
-      // listings is a public mapping: listings(nftAddress, tokenId)
       const updatedListing = await marketContract.listings(nftAddress, listing.tokenId);
       setCurrentHighestBid(ethers.formatEther(updatedListing.highestBid));
     } catch (error) {
@@ -72,7 +89,6 @@ function AuctionListingItem({ listing, marketContract, refreshListings, nftAddre
     if (listing.isAuction) {
       fetchAuctionData();
     }
-    // Optionally refresh when bid events occur
   }, [listing, marketContract]);
 
   const handleBid = async () => {
@@ -91,7 +107,6 @@ function AuctionListingItem({ listing, marketContract, refreshListings, nftAddre
     }
   };
 
-  // Finalize the auction after it ends
   const handleEndAuction = async () => {
     try {
       setStatus("Finalizing auction...");
@@ -106,42 +121,48 @@ function AuctionListingItem({ listing, marketContract, refreshListings, nftAddre
   };
 
   return (
-    <li style={{ marginBottom: "20px", border: "1px solid #ccc", padding: "10px" }}>
-      <p>
-        <strong>Token ID:</strong> {listing.tokenId}
-      </p>
-      <p>
+    <Box>
+      <Typography variant="body2">
         <strong>Seller:</strong> {listing.seller}
-      </p>
+      </Typography>
       {currentHighestBid === "0" ? (
-        <p>
+        <Typography variant="body2">
           <strong>Starting bid:</strong> {listing.price} ETH
-        </p>
+        </Typography>
       ) : (
-        <p>
+        <Typography variant="body2">
           <strong>Current highest bid:</strong> {currentHighestBid} ETH
-        </p>
+        </Typography>
       )}
-      <p>
+      <Typography variant="body2">
         <strong>Auction ends in:</strong>{" "}
         {timeLeft > 0 ? `${timeLeft} seconds` : "Auction ended"}
-      </p>
+      </Typography>
       {timeLeft > 0 ? (
-        <>
-          <input
-            type="text"
-            placeholder="Bid amount (ETH)"
+        <Box sx={{ mt: 1, display: "flex", alignItems: "center", gap: 1 }}>
+          <TextField
+            label="Bid amount (ETH)"
+            size="small"
             value={bidValue}
             onChange={(e) => setBidValue(e.target.value)}
           />
-          <button onClick={handleBid}>Place Bid</button>
-        </>
+          <Button variant="contained" onClick={handleBid}>
+            Place Bid
+          </Button>
+        </Box>
       ) : (
-        // Auction time has elapsed – show button to finalize auction
-        <button onClick={handleEndAuction}>End Auction</button>
+        <Button variant="contained" onClick={handleEndAuction} sx={{ mt: 1 }}>
+          End Auction
+        </Button>
       )}
-      {status && <p>Status: {status}</p>}
-    </li>
+      {status && (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {status}
+        </Typography>
+      )} 
+    </Box>
+
+
   );
 }
 
@@ -152,12 +173,12 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
   const fetchListings = async () => {
     if (!marketContract) return;
     try {
-      // Query Listed, Sale, and AuctionEnded events
+      // Query events for listings, sales, and auction finalizations
       const listedEvents = await marketContract.queryFilter("Listed");
       const saleEvents = await marketContract.queryFilter("Sale");
       const auctionEndedEvents = await marketContract.queryFilter("AuctionEnded");
-  
-      // Combine all events with a type tag
+
+      // Combine events with a type tag
       let allEvents = [];
       listedEvents.forEach((event) => {
         allEvents.push({ type: "Listed", event });
@@ -168,18 +189,18 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
       auctionEndedEvents.forEach((event) => {
         allEvents.push({ type: "AuctionEnded", event });
       });
-  
-      // Sort all events by blockNumber (ascending order)
+
+      // Sort events by blockNumber (oldest first)
       allEvents.sort((a, b) => a.event.blockNumber - b.event.blockNumber);
-  
-      // Build a mapping for each tokenId to the latest event
+
+      // Determine latest state for each tokenId
       const latestState = {};
       allEvents.forEach((item) => {
         const tokenId = item.event.args.tokenId.toString();
-        latestState[tokenId] = item; // later events overwrite earlier ones
+        latestState[tokenId] = item;
       });
-  
-      // Filter only tokens whose latest event is "Listed"
+
+      // Filter active listings (only where the latest event is "Listed")
       const activeListings = Object.values(latestState)
         .filter((item) => item.type === "Listed")
         .map((item) => ({
@@ -190,60 +211,62 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
           isAuction: item.event.args.isAuction,
           auctionEnd: Number(item.event.args.auctionEnd), // Convert BigInt to Number
         }));
-  
+
       setListings(activeListings);
     } catch (error) {
       console.error("Error fetching marketplace listings:", error);
     }
   };
-  
 
   useEffect(() => {
     if (marketContract) {
       fetchListings();
-      const handleNewEvent = () => {
-        fetchListings();
-      };
+      const handleNewEvent = () => fetchListings();
       marketContract.on("Listed", handleNewEvent);
       marketContract.on("Sale", handleNewEvent);
       marketContract.on("Bid", handleNewEvent);
+      marketContract.on("AuctionEnded", handleNewEvent);
       return () => {
         marketContract.removeListener("Listed", handleNewEvent);
         marketContract.removeListener("Sale", handleNewEvent);
         marketContract.removeListener("Bid", handleNewEvent);
+        marketContract.removeListener("AuctionEnded", handleNewEvent);
       };
     }
   }, [marketContract]);
 
   return (
-    <div style={{ marginTop: "20px", padding: "20px", border: "1px solid #ccc" }}>
-      <h2>Marketplace Listings</h2>
-      {listings.length === 0 ? (
-        <p>No listings available.</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {listings.map((listing, index) =>
-            listing.isAuction ? (
-              <AuctionListingItem
-                key={index}
-                listing={listing}
-                marketContract={marketContract}
-                refreshListings={fetchListings}
-                nftAddress={nftAddress}
-              />
-            ) : (
-              <FixedPriceListingItem
-                key={index}
-                listing={listing}
-                marketContract={marketContract}
-                refreshListings={fetchListings}
-              />
-            )
-          )}
-        </ul>
-      )}
-      <button onClick={fetchListings}>Refresh Listings</button>
-    </div>
+    <Box>
+              {listings.length === 0 ? (
+          <Typography>No listings available.</Typography>
+        ) : (
+          <Box>
+            {listings.map((listing, index) =>
+              listing.isAuction ? (
+                <AuctionListingItem
+                  key={index}
+                  listing={listing}
+                  marketContract={marketContract}
+                  refreshListings={fetchListings}
+                  nftAddress={nftAddress}
+                />
+              ) : (
+                <FixedPriceListingItem
+                  key={index}
+                  listing={listing}
+                  marketContract={marketContract}
+                  refreshListings={fetchListings}
+                />
+              )
+            )}
+          </Box>
+        )}
+        <Box textAlign="center" sx={{ mt: 2 }}>
+          <Button variant="contained" onClick={fetchListings}>
+            Refresh Listings
+          </Button>
+        </Box>
+    </Box>
   );
 }
 

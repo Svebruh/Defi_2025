@@ -1,6 +1,7 @@
 // src/ListCard.js
 import React, { useState } from "react";
-import { ethers, parseEther } from "ethers";
+import { Box, Typography, TextField, Button, FormControlLabel, Checkbox } from "@mui/material";
+import { parseEther } from "ethers";
 
 function ListCard({ marketContract, nftContract, marketAddress }) {
   const [tokenId, setTokenId] = useState("");
@@ -18,7 +19,6 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
 
     try {
       setStatus("Checking NFT approval...");
-      // Check if the NFT is already approved for the marketplace
       const approvedAddress = await nftContract.getApproved(tokenId);
       if (approvedAddress.toLowerCase() !== marketAddress.toLowerCase()) {
         setStatus("Approving NFT for marketplace...");
@@ -27,14 +27,12 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
         setStatus("NFT approved. Proceeding with listing...");
       }
 
-      // Convert price from ETH to wei
       const priceInWei = parseEther(price);
-      // Call listItem on the marketplace contract.
       const tx = await marketContract.listItem(
         tokenId,
         priceInWei,
         isAuction,
-        isAuction ? auctionDuration : 0 // if not auction, pass 0 for duration
+        isAuction ? auctionDuration : 0
       );
       await tx.wait();
       setStatus("Card listed successfully!");
@@ -45,58 +43,50 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
   };
 
   return (
-    <div style={{ marginTop: "20px", padding: "20px", border: "1px solid #ccc" }}>
-      <h2>List Your Card</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
-          <label>
-            Token ID:{" "}
-            <input
-              type="text"
-              value={tokenId}
-              onChange={(e) => setTokenId(e.target.value)}
-              required
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <label>
-            Price (in ETH):{" "}
-            <input
-              type="text"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <label>
-            Auction Mode:{" "}
-            <input
-              type="checkbox"
-              checked={isAuction}
-              onChange={(e) => setIsAuction(e.target.checked)}
-            />
-          </label>
-        </div>
-        {isAuction && (
-          <div style={{ marginBottom: "10px" }}>
-            <label>
-              Auction Duration (seconds):{" "}
-              <input
-                type="text"
-                value={auctionDuration}
-                onChange={(e) => setAuctionDuration(e.target.value)}
-                required={isAuction}
+    <Box>
+      {status && <Typography sx={{ mb: 2 }}>Status: {status}</Typography>}
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Token ID"
+            type="number"
+            value={tokenId}
+            onChange={(e) => setTokenId(e.target.value)}
+            required
+            sx={{ mb: 2, mr: 2 }}
+          />
+          <TextField
+            label="Price (ETH)"
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+            sx={{ mb: 2, mr: 2 }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isAuction}
+                onChange={(e) => setIsAuction(e.target.checked)}
               />
-            </label>
-          </div>
-        )}
-        <button type="submit">List Card</button>
-      </form>
-      {status && <p>Status: {status}</p>}
-    </div>
+            }
+            label="Auction Mode"
+            sx={{ display: "block" }}
+          />
+          {isAuction && (
+            <TextField
+              label="Auction Duration (seconds)"
+              type="number"
+              value={auctionDuration}
+              onChange={(e) => setAuctionDuration(e.target.value)}
+              required
+              sx={{ mb: 2, mr: 2 }}
+            />
+          )}
+          <Button variant="contained" type="submit">
+            List Card
+          </Button>
+        </form>
+    </Box>
   );
 }
 

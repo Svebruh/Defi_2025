@@ -1,6 +1,6 @@
 // src/Inventory.js
 import React, { useEffect, useState } from "react";
-import { ethers } from "ethers";
+import { Box, Typography, Button } from "@mui/material";
 
 function Inventory({ nftContract, account }) {
   const [cards, setCards] = useState([]);
@@ -10,16 +10,12 @@ function Inventory({ nftContract, account }) {
     if (!nftContract || !account) return;
     setLoading(true);
     try {
-      // Get the number of tokens owned by the account.
       const balance = await nftContract.balanceOf(account);
       const tokenIds = [];
-      // Loop through each token index and fetch the token ID.
       for (let i = 0; i < balance; i++) {
         const tokenId = await nftContract.tokenOfOwnerByIndex(account, i);
         tokenIds.push(tokenId.toString());
       }
-
-      // Retrieve metadata for each token.
       const tokens = await Promise.all(
         tokenIds.map(async (tokenId) => {
           const tokenURI = await nftContract.tokenURI(tokenId);
@@ -38,31 +34,29 @@ function Inventory({ nftContract, account }) {
   }, [nftContract, account]);
 
   return (
-    <div style={{ marginTop: "20px", padding: "20px", border: "1px solid #ccc" }}>
-      <h2>My Inventory</h2>
-      {loading ? (
-        <p>Loading inventory...</p>
-      ) : cards.length === 0 ? (
-        <p>You don’t own any cards yet.</p>
-      ) : (
-        <ul>
-          {cards.map((card, index) => (
-            <li key={index}>
-              <p>
-                <strong>Token ID:</strong> {card.tokenId}
-              </p>
-              <p>
-                <strong>Metadata:</strong>{" "}
-                <a href={card.tokenURI} target="_blank" rel="noopener noreferrer">
-                  {card.tokenURI}
-                </a>
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
-      <button onClick={fetchInventory}>Refresh Inventory</button>
-    </div>
+    <Box>
+      {loading && <Typography>Loading inventory...</Typography>}
+        {!loading && cards.length === 0 && (
+          <Typography>You don’t own any cards yet.</Typography>
+        )}
+        {!loading && cards.length > 0 && (
+          <ul>
+            {cards.map((card, index) => (
+              <li key={index}>
+                <Typography variant="body1">
+                  <strong>Token ID:</strong> {card.tokenId}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Metadata:</strong> {card.tokenURI}
+                </Typography>
+              </li>
+            ))}
+          </ul>
+        )}
+        <Button variant="contained" onClick={fetchInventory}>
+          Refresh Inventory
+        </Button>
+    </Box> 
   );
 }
 

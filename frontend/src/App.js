@@ -1,11 +1,15 @@
 // src/App.js
 import React, { useState } from "react";
-import { ethers, parseEther } from "ethers";
+import { ethers } from "ethers";
+import { Container, Paper, Typography, Button, Box } from "@mui/material";
+
 import PokemonCardNFTArtifact from "./abi/PokemonCardNFT.json";
 import PokemonCardMarketArtifact from "./abi/PokemonCardMarket.json";
+
+import Section from "./components/Section";
 import MintCard from "./MintCard";
-import ListCard from "./ListCard";
 import Inventory from "./Inventory";
+import ListCard from "./ListCard";
 import Marketplace from "./Marketplace";
 import WithdrawFunds from "./WithdrawFunds";
 
@@ -22,13 +26,18 @@ function App() {
   async function connectWallet() {
     if (window.ethereum) {
       try {
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
+
         setProvider(provider);
         setAccount(accounts[0]);
+
         const nft = new ethers.Contract(nftAddress, PokemonCardNFTArtifact.abi, signer);
         setNftContract(nft);
+
         const market = new ethers.Contract(marketAddress, PokemonCardMarketArtifact.abi, signer);
         setMarketContract(market);
       } catch (error) {
@@ -40,29 +49,69 @@ function App() {
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Pokémon Card Trading Platform</h1>
-      {account ? (
-        <p>Connected as: {account}</p>
-      ) : (
-        <button onClick={connectWallet}>Connect Wallet</button>
-      )}
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper
+        elevation={6}
+        sx={{
+          p: 4,
+          mb: 4,
+          borderRadius: 4,         // Extra rounding for the main header
+          textAlign: "center",
+          backgroundColor: "#FFFFFF", // White background for the header
+        }}
+      >
+        <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
+          Pokémon Card Trading Platform
+        </Typography>
+        {account ? (
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Connected as: <strong>{account}</strong>
+          </Typography>
+        ) : (
+          <Button variant="contained" onClick={connectWallet}>
+            Connect Wallet
+          </Button>
+        )}
+      </Paper>
 
+      {/* Show Mint + Inventory if NFT contract is loaded */}
       {nftContract && account && (
         <>
-          <MintCard nftContract={nftContract} account={account} />
-          <Inventory nftContract={nftContract} account={account} />
+          <Section title="Mint Pokémon Cards">
+            <MintCard nftContract={nftContract} account={account} />
+          </Section>
+
+          <Section title="My Inventory">
+            <Inventory nftContract={nftContract} account={account} />
+          </Section>
         </>
       )}
 
+      {/* Show ListCard + Marketplace + Withdraw if Market contract is loaded */}
       {marketContract && (
         <>
-          <ListCard marketContract={marketContract} nftContract={nftContract} marketAddress={marketAddress} />
-          <Marketplace marketContract={marketContract} nftContract={nftContract} nftAddress={nftAddress} />
-          <WithdrawFunds marketContract={marketContract} />
+          <Section title="List Your Card">
+            <ListCard
+              marketContract={marketContract}
+              nftContract={nftContract}
+              marketAddress={marketAddress}
+            />
+          </Section>
+
+          <Section title="Marketplace Listings">
+            <Marketplace
+              marketContract={marketContract}
+              nftContract={nftContract}
+              nftAddress={nftAddress}
+            />
+          </Section>
+
+          <Section title="Withdraw Funds">
+            <WithdrawFunds marketContract={marketContract} />
+          </Section>
         </>
       )}
-    </div>
+    </Container>
   );
 }
 
