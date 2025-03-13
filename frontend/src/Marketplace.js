@@ -57,7 +57,12 @@ function FixedPriceListingItem({ listing, marketContract, refreshListings }) {
 }
 
 // Auction listing subcomponent
-function AuctionListingItem({ listing, marketContract, refreshListings, nftAddress }) {
+function AuctionListingItem({
+  listing,
+  marketContract,
+  refreshListings,
+  nftAddress,
+}) {
   const [bidValue, setBidValue] = useState("");
   const [status, setStatus] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
@@ -78,7 +83,10 @@ function AuctionListingItem({ listing, marketContract, refreshListings, nftAddre
   // Fetch the latest auction data (current highest bid)
   const fetchAuctionData = async () => {
     try {
-      const updatedListing = await marketContract.listings(nftAddress, listing.tokenId);
+      const updatedListing = await marketContract.listings(
+        nftAddress,
+        listing.tokenId
+      );
       setCurrentHighestBid(ethers.formatEther(updatedListing.highestBid));
     } catch (error) {
       console.error("Error fetching auction data:", error);
@@ -159,10 +167,8 @@ function AuctionListingItem({ listing, marketContract, refreshListings, nftAddre
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           {status}
         </Typography>
-      )} 
+      )}
     </Box>
-
-
   );
 }
 
@@ -176,7 +182,9 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
       // Query events for listings, sales, and auction finalizations
       const listedEvents = await marketContract.queryFilter("Listed");
       const saleEvents = await marketContract.queryFilter("Sale");
-      const auctionEndedEvents = await marketContract.queryFilter("AuctionEnded");
+      const auctionEndedEvents = await marketContract.queryFilter(
+        "AuctionEnded"
+      );
 
       // Combine events with a type tag
       let allEvents = [];
@@ -220,7 +228,7 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
 
   useEffect(() => {
     if (marketContract) {
-      fetchListings();
+      // fetchListings();// is it needed twice?
       const handleNewEvent = () => fetchListings();
       marketContract.on("Listed", handleNewEvent);
       marketContract.on("Sale", handleNewEvent);
@@ -237,35 +245,35 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
 
   return (
     <Box>
-              {listings.length === 0 ? (
-          <Typography>No listings available.</Typography>
-        ) : (
-          <Box>
-            {listings.map((listing, index) =>
-              listing.isAuction ? (
-                <AuctionListingItem
-                  key={index}
-                  listing={listing}
-                  marketContract={marketContract}
-                  refreshListings={fetchListings}
-                  nftAddress={nftAddress}
-                />
-              ) : (
-                <FixedPriceListingItem
-                  key={index}
-                  listing={listing}
-                  marketContract={marketContract}
-                  refreshListings={fetchListings}
-                />
-              )
-            )}
-          </Box>
-        )}
-        <Box textAlign="center" sx={{ mt: 2 }}>
-          <Button variant="contained" onClick={fetchListings}>
-            Refresh Listings
-          </Button>
+      {listings.length === 0 ? (
+        <Typography>No listings available.</Typography>
+      ) : (
+        <Box>
+          {listings.map((listing, index) =>
+            listing.isAuction ? (
+              <AuctionListingItem
+                key={index}
+                listing={listing}
+                marketContract={marketContract}
+                refreshListings={fetchListings}
+                nftAddress={nftAddress}
+              />
+            ) : (
+              <FixedPriceListingItem
+                key={index}
+                listing={listing}
+                marketContract={marketContract}
+                refreshListings={fetchListings}
+              />
+            )
+          )}
         </Box>
+      )}
+      <Box textAlign="center" sx={{ mt: 2 }}>
+        <Button variant="contained" onClick={fetchListings}>
+          Refresh Listings
+        </Button>
+      </Box>
     </Box>
   );
 }

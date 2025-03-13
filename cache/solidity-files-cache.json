@@ -639,8 +639,8 @@
       ]
     },
     "/home/sven/ETH/Defi_2025/Defi_2025/contracts/PokemonCardMarket.sol": {
-      "lastModificationDate": 1741101817786,
-      "contentHash": "9d18f3c2f393e3f64eb3185d9466c660",
+      "lastModificationDate": 1741888239374,
+      "contentHash": "5182422d62947537a4bccd40e53b1ed8",
       "sourceName": "contracts/PokemonCardMarket.sol",
       "solcConfig": {
         "version": "0.8.28",

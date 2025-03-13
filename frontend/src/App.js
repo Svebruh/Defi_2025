@@ -35,10 +35,18 @@ function App() {
         setProvider(provider);
         setAccount(accounts[0]);
 
-        const nft = new ethers.Contract(nftAddress, PokemonCardNFTArtifact.abi, signer);
+        const nft = new ethers.Contract(
+          nftAddress,
+          PokemonCardNFTArtifact.abi,
+          signer
+        );
         setNftContract(nft);
 
-        const market = new ethers.Contract(marketAddress, PokemonCardMarketArtifact.abi, signer);
+        const market = new ethers.Contract(
+          marketAddress,
+          PokemonCardMarketArtifact.abi,
+          signer
+        );
         setMarketContract(market);
       } catch (error) {
         console.error("Error connecting wallet:", error);
@@ -55,7 +63,7 @@ function App() {
         sx={{
           p: 4,
           mb: 4,
-          borderRadius: 4,         // Extra rounding for the main header
+          borderRadius: 4, // Extra rounding for the main header
           textAlign: "center",
           backgroundColor: "#FFFFFF", // White background for the header
         }}

@@ -166,6 +166,7 @@ contract PokemonCardMarket is ReentrancyGuard {
         } else {
             // No bids: return NFT to seller
             nftContract.transferFrom(address(this), listing.seller, tokenId);
+            emit AuctionEnded(listing.seller, address(nftContract), tokenId, 0);
         }
     }
 
