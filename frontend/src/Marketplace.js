@@ -228,7 +228,6 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
 
   useEffect(() => {
     if (marketContract) {
-      // fetchListings();// is it needed twice?
       const handleNewEvent = () => fetchListings();
       marketContract.on("Listed", handleNewEvent);
       marketContract.on("Sale", handleNewEvent);
