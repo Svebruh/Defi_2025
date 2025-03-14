@@ -36,27 +36,27 @@ function Inventory({ nftContract, account }) {
   return (
     <Box>
       {loading && <Typography>Loading inventory...</Typography>}
-        {!loading && cards.length === 0 && (
-          <Typography>You don’t own any cards yet.</Typography>
-        )}
-        {!loading && cards.length > 0 && (
-          <ul>
-            {cards.map((card, index) => (
-              <li key={index}>
-                <Typography variant="body1">
-                  <strong>Token ID:</strong> {card.tokenId}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Metadata:</strong> {card.tokenURI}
-                </Typography>
-              </li>
-            ))}
-          </ul>
-        )}
-        <Button variant="contained" onClick={fetchInventory}>
-          Refresh Inventory
-        </Button>
-    </Box> 
+      {!loading && cards.length === 0 && (
+        <Typography>You don’t own any cards yet.</Typography>
+      )}
+      {!loading && cards.length > 0 && (
+        <ul>
+          {cards.map((card, index) => (
+            <li key={index}>
+              <Typography variant="body1">
+                <strong>Token ID:</strong> {card.tokenId}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Metadata:</strong> {card.tokenURI}
+              </Typography>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Button variant="contained" onClick={fetchInventory}>
+        Refresh Inventory
+      </Button>
+    </Box>
   );
 }
 

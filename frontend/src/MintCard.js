@@ -1,6 +1,13 @@
 // src/MintCard.js
 import React, { useState } from "react";
-import { Card, CardContent, CardActions, Typography, Button, Box } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Button,
+  Box,
+} from "@mui/material";
 
 function MintCard({ nftContract, account }) {
   const [status, setStatus] = useState("");
@@ -8,15 +15,18 @@ function MintCard({ nftContract, account }) {
   const cards = [
     {
       name: "Pikachu",
-      tokenURI: "/metadata/pikachu.json",
+      tokenURI:
+        "https://sven.bruhin.biz/wp-content/uploads/2025/03/Pikachu.json",
     },
     {
       name: "Charmander",
-      tokenURI: "/metadata/charmander.json",
+      tokenURI:
+        "https://sven.bruhin.biz/wp-content/uploads/2025/03/Charmander.json",
     },
     {
       name: "Bulbasaur",
-      tokenURI: "/metadata/bulbasaur.json",
+      tokenURI:
+        "https://sven.bruhin.biz/wp-content/uploads/2025/03/Bulbasaur.json",
     },
   ];
 
