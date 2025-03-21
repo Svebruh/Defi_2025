@@ -1,4 +1,3 @@
-// src/theme.js
 import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
@@ -7,10 +6,10 @@ const theme = createTheme({
       default: "#ECEFF1", // A light gray-blue background for the entire page
     },
     primary: {
-      main: "#1976d2",    // Default MUI blue
+      main: "#1976d2", // Default MUI blue
     },
     secondary: {
-      main: "#D81B60",    // A pinkish accent
+      main: "#D81B60", // A pinkish accent
     },
   },
   shape: {

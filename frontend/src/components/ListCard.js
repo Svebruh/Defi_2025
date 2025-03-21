@@ -1,7 +1,13 @@
-// src/ListCard.js
-import React, { useState } from "react";
-import { Box, Typography, TextField, Button, FormControlLabel, Checkbox } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { parseEther } from "ethers";
+import React, { useState } from "react";
 
 function ListCard({ marketContract, nftContract, marketAddress }) {
   const [tokenId, setTokenId] = useState("");
@@ -45,15 +51,16 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
   return (
     <Box>
       {status && <Typography sx={{ mb: 2 }}>Status: {status}</Typography>}
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="Token ID"
-            type="number"
-            value={tokenId}
-            onChange={(e) => setTokenId(e.target.value)}
-            required
-            sx={{ mb: 2, mr: 2 }}
-          />
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Token ID"
+          type="number"
+          value={tokenId}
+          onChange={(e) => setTokenId(e.target.value)}
+          required
+          sx={{ mb: 2, mr: 2 }}
+        />
+        {!isAuction && (
           <TextField
             label="Price (ETH)"
             type="number"
@@ -62,30 +69,31 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
             required
             sx={{ mb: 2, mr: 2 }}
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isAuction}
-                onChange={(e) => setIsAuction(e.target.checked)}
-              />
-            }
-            label="Auction Mode"
-            sx={{ display: "block" }}
-          />
-          {isAuction && (
-            <TextField
-              label="Auction Duration (seconds)"
-              type="number"
-              value={auctionDuration}
-              onChange={(e) => setAuctionDuration(e.target.value)}
-              required
-              sx={{ mb: 2, mr: 2 }}
+        )}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isAuction}
+              onChange={(e) => setIsAuction(e.target.checked)}
             />
-          )}
-          <Button variant="contained" type="submit">
-            List Card
-          </Button>
-        </form>
+          }
+          label="Auction Mode"
+          sx={{ display: "block" }}
+        />
+        {isAuction && (
+          <TextField
+            label="Auction Duration (seconds)"
+            type="number"
+            value={auctionDuration}
+            onChange={(e) => setAuctionDuration(e.target.value)}
+            required
+            sx={{ mb: 2, mr: 2 }}
+          />
+        )}
+        <Button variant="contained" type="submit">
+          List Card
+        </Button>
+      </form>
     </Box>
   );
 }

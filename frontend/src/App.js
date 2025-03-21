@@ -1,17 +1,16 @@
-// src/App.js
-import React, { useState } from "react";
+import { Button, Container, Paper, Typography } from "@mui/material";
 import { ethers } from "ethers";
-import { Container, Paper, Typography, Button, Box } from "@mui/material";
+import React, { useState } from "react";
 
-import PokemonCardNFTArtifact from "./abi/PokemonCardNFT.json";
 import PokemonCardMarketArtifact from "./abi/PokemonCardMarket.json";
+import PokemonCardNFTArtifact from "./abi/PokemonCardNFT.json";
 
+import Inventory from "./components/Inventory";
+import ListCard from "./components/ListCard";
+import Marketplace from "./components/Marketplace";
+import MintCard from "./components/MintCard";
 import Section from "./components/Section";
-import MintCard from "./MintCard";
-import Inventory from "./Inventory";
-import ListCard from "./ListCard";
-import Marketplace from "./Marketplace";
-import WithdrawFunds from "./WithdrawFunds";
+import WithdrawFunds from "./components/WithdrawFunds";
 
 // Replace with your deployed contract addresses
 const nftAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";

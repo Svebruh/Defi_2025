@@ -1,13 +1,5 @@
-// src/MintCard.js
+import { Box, Button, Typography } from "@mui/material";
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Button,
-  Box,
-} from "@mui/material";
 
 function MintCard({ nftContract, account }) {
   const [status, setStatus] = useState("");
@@ -41,6 +33,7 @@ function MintCard({ nftContract, account }) {
       await tx.wait();
       setStatus("Minting successful!");
     } catch (error) {
+      // setStatus(`Minting failed: ${error.message}`);
       console.error("Error minting card:", error);
       setStatus("Minting failed.");
     }

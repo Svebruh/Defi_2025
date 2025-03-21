@@ -1,6 +1,5 @@
-// src/Inventory.js
+import { Box, Button, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Button } from "@mui/material";
 
 function Inventory({ nftContract, account }) {
   const [cards, setCards] = useState([]);

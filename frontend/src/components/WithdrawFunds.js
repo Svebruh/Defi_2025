@@ -1,6 +1,5 @@
-// src/WithdrawFunds.js
+import { Box, Button, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { Paper, Typography, Button, Box } from "@mui/material";
 
 function WithdrawFunds({ marketContract }) {
   const [status, setStatus] = useState("");
@@ -20,21 +19,21 @@ function WithdrawFunds({ marketContract }) {
 
   return (
     <Box>
-       <Box textAlign="center">
-          <Button variant="contained" onClick={handleWithdraw}>
-            Withdraw Funds
-          </Button>
-        </Box>
-        {status && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            align="center"
-            sx={{ mt: 1 }}
-          >
-            {status}
-          </Typography>
-        )}
+      <Box textAlign="center">
+        <Button variant="contained" onClick={handleWithdraw}>
+          Withdraw Funds
+        </Button>
+      </Box>
+      {status && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="center"
+          sx={{ mt: 1 }}
+        >
+          {status}
+        </Typography>
+      )}
     </Box>
   );
 }

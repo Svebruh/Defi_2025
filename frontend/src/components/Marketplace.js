@@ -1,16 +1,13 @@
-// src/Marketplace.js
-import React, { useState, useEffect } from "react";
-import { ethers, parseEther } from "ethers";
 import {
-  Container,
-  Paper,
   Box,
-  Typography,
   Button,
   Card,
   CardContent,
   TextField,
+  Typography,
 } from "@mui/material";
+import { ethers, parseEther } from "ethers";
+import React, { useEffect, useState } from "react";
 
 // Fixed-price listing subcomponent
 function FixedPriceListingItem({ listing, marketContract, refreshListings }) {
