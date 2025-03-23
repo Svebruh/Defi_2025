@@ -1,3 +1,4 @@
+// src/Inventory.js
 import { Box, Button, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 
@@ -9,18 +10,33 @@ function Inventory({ nftContract, account }) {
     if (!nftContract || !account) return;
     setLoading(true);
     try {
+      // 1. Get number of tokens owned
       const balance = await nftContract.balanceOf(account);
       const tokenIds = [];
+
       for (let i = 0; i < balance; i++) {
-        const tokenId = await nftContract.tokenOfOwnerByIndex(account, i);
-        tokenIds.push(tokenId.toString());
+        const tokenIdBN = await nftContract.tokenOfOwnerByIndex(account, i);
+        tokenIds.push(tokenIdBN.toString());
       }
+
+      // 2. Fetch metadata for each token
       const tokens = await Promise.all(
         tokenIds.map(async (tokenId) => {
           const tokenURI = await nftContract.tokenURI(tokenId);
-          return { tokenId, tokenURI };
+
+          // Attempt to fetch the metadata JSON
+          let metadata = null;
+          try {
+            const response = await fetch(tokenURI);
+            metadata = await response.json();
+          } catch (err) {
+            console.error("Error fetching metadata:", err);
+          }
+
+          return { tokenId, tokenURI, metadata };
         })
       );
+
       setCards(tokens);
     } catch (error) {
       console.error("Error fetching inventory:", error);
@@ -38,23 +54,68 @@ function Inventory({ nftContract, account }) {
       {!loading && cards.length === 0 && (
         <Typography>You don’t own any cards yet.</Typography>
       )}
+
       {!loading && cards.length > 0 && (
-        <ul>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {cards.map((card, index) => (
-            <li key={index}>
-              <Typography variant="body1">
-                <strong>Token ID:</strong> {card.tokenId}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Metadata:</strong> {card.tokenURI}
-              </Typography>
-            </li>
+            <Box
+              key={index}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                border: "1px solid #444",
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: "#fff",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              {/* Show image if available */}
+              {card.metadata?.image ? (
+                <img
+                  src={card.metadata.image}
+                  alt={card.metadata.name || `Token #${card.tokenId}`}
+                  style={{ width: "80px", borderRadius: "8px" }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 2,
+                    backgroundColor: "#333",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography variant="caption">No Image</Typography>
+                </Box>
+              )}
+
+              <Box>
+                <Typography variant="body1">
+                  <strong>Token ID:</strong> {card.tokenId}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Metadata URI:</strong> {card.tokenURI}
+                </Typography>
+                {card.metadata?.name && (
+                  <Typography variant="body2">
+                    <strong>Name:</strong> {card.metadata.name}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
           ))}
-        </ul>
+        </Box>
       )}
-      <Button variant="contained" onClick={fetchInventory}>
-        Refresh Inventory
-      </Button>
+      <Box textAlign="center" sx={{ mt: 0 }}>
+        <Button variant="contained" onClick={fetchInventory} sx={{ mt: 2 }}>
+          Refresh Inventory
+        </Button>
+      </Box>
     </Box>
   );
 }

@@ -1,0 +1,12 @@
+{
+  "name": "Bulbasaur",
+  "description": "A Grass/Poison type Pokémon with a plant seed on its back, ready to bloom.",
+  "image": "https://sven.bruhin.biz/wp-content/uploads/2025/03/Bulbasaur.png",
+  "attributes": [
+    { "trait_type": "Type", "value": "Grass/Poison" },
+    { "trait_type": "HP", "value": 45 },
+    { "trait_type": "Attack", "value": 49 },
+    { "trait_type": "Defense", "value": 49 },
+    { "trait_type": "Speed", "value": 45 }
+  ]
+}

@@ -90,9 +90,11 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
             sx={{ mb: 2, mr: 2 }}
           />
         )}
-        <Button variant="contained" type="submit">
-          List Card
-        </Button>
+        <Box textAlign="center" sx={{ mt: 0 }}>
+          <Button variant="contained" type="submit">
+            List Card
+          </Button>
+        </Box>
       </form>
     </Box>
   );

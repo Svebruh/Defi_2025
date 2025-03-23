@@ -7,18 +7,15 @@ function MintCard({ nftContract, account }) {
   const cards = [
     {
       name: "Pikachu",
-      tokenURI:
-        "https://sven.bruhin.biz/wp-content/uploads/2025/03/Pikachu.json",
+      tokenURI: "/TokenURI/Pikachu.json",
     },
     {
       name: "Charmander",
-      tokenURI:
-        "https://sven.bruhin.biz/wp-content/uploads/2025/03/Charmander.json",
+      tokenURI: "/TokenURI/Charmander.json",
     },
     {
       name: "Bulbasaur",
-      tokenURI:
-        "https://sven.bruhin.biz/wp-content/uploads/2025/03/Bulbasaur.json",
+      tokenURI: "/TokenURI/Bulbasaur.json",
     },
   ];
 
