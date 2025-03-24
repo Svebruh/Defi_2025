@@ -51,6 +51,7 @@ contract PokemonCardMarket is ReentrancyGuard {
         uint256 indexed tokenId,
         uint256 finalPrice
     );
+    event Withdrawal(address indexed seller, uint256 amount);
 
     /**
      * @notice Initializes the marketplace with the deployed NFT contract address.
@@ -179,5 +180,6 @@ contract PokemonCardMarket is ReentrancyGuard {
         pendingWithdrawals[msg.sender] = 0;
         (bool success, ) = msg.sender.call{value: amount}("");
         require(success, "Withdrawal failed");
+        emit Withdrawal(msg.sender, amount);
     }
 }
