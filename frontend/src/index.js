@@ -5,6 +5,7 @@ import App from "./App";
 import theme from "./theme"; // Import your custom theme
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
 root.render(
   <ThemeProvider theme={theme}>
     <CssBaseline />

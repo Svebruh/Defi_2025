@@ -114,7 +114,7 @@ function App() {
           </Section>
 
           <Section title="Withdraw Funds">
-            <WithdrawFunds marketContract={marketContract} />
+            <WithdrawFunds marketContract={marketContract} account={account} />
           </Section>
         </>
       )}
