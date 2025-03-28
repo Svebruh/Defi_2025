@@ -1,30 +1,24 @@
 // src/Inventory.js
 import { Box, Button, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 function Inventory({ nftContract, account }) {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
     if (!nftContract || !account) return;
     setLoading(true);
     try {
-      // 1. Get number of tokens owned
       const balance = await nftContract.balanceOf(account);
       const tokenIds = [];
-
       for (let i = 0; i < balance; i++) {
         const tokenIdBN = await nftContract.tokenOfOwnerByIndex(account, i);
         tokenIds.push(tokenIdBN.toString());
       }
-
-      // 2. Fetch metadata for each token
       const tokens = await Promise.all(
         tokenIds.map(async (tokenId) => {
           const tokenURI = await nftContract.tokenURI(tokenId);
-
-          // Attempt to fetch the metadata JSON
           let metadata = null;
           try {
             const response = await fetch(tokenURI);
@@ -32,21 +26,38 @@ function Inventory({ nftContract, account }) {
           } catch (err) {
             console.error("Error fetching metadata:", err);
           }
-
           return { tokenId, tokenURI, metadata };
         })
       );
-
       setCards(tokens);
     } catch (error) {
       console.error("Error fetching inventory:", error);
     }
     setLoading(false);
-  };
+  }, [nftContract, account]);
 
+  // Initial load & update on dependency changes
   useEffect(() => {
     fetchInventory();
-  }, [nftContract, account]);
+  }, [fetchInventory]);
+
+  // Listen for Transfer events to trigger a refresh automatically.
+  useEffect(() => {
+    if (!nftContract || !account) return;
+
+    // Listen for incoming transfers (mint or received NFT)
+    const filterIn = nftContract.filters.Transfer(null, account);
+    // Listen for outgoing transfers (NFT sent away)
+    const filterOut = nftContract.filters.Transfer(account, null);
+
+    nftContract.on(filterIn, fetchInventory);
+    nftContract.on(filterOut, fetchInventory);
+
+    return () => {
+      nftContract.off(filterIn, fetchInventory);
+      nftContract.off(filterOut, fetchInventory);
+    };
+  }, [nftContract, account, fetchInventory]);
 
   return (
     <Box>

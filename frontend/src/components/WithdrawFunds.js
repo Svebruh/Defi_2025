@@ -38,22 +38,36 @@ function WithdrawFunds({ marketContract, account }) {
 
     // Create a filter for all Sale events. You can pass nulls to capture all events.
     const saleFilter = marketContract.filters.Sale(null, null, null, null);
+    const auctionEndedFilter = marketContract.filters.AuctionEnded(
+      null,
+      null,
+      null
+    );
+
+    // Define the event handler for AuctionEnded
+    const handleAuctionEnded = (
+      winner,
+      nftAddress,
+      tokenId,
+      finalPrice,
+      event
+    ) => {
+      fetchPendingWithdrawal();
+    };
 
     // Define the event handler
     const handleSale = (buyer, nftAddress, tokenId, price, event) => {
-      console.log("Sale event detected:");
-      console.log("Buyer:", buyer);
-      console.log("NFT Address:", nftAddress);
-      console.log("Token ID:", tokenId.toString());
-      console.log("Price:", ethers.formatEther(price), "ETH");
       fetchPendingWithdrawal();
     };
 
     // Attach the event listener
     marketContract.on(saleFilter, handleSale);
+    marketContract.on(auctionEndedFilter, handleAuctionEnded);
+
     // Clean up the event listener on unmount or when marketContract changes
     return () => {
       marketContract.off(saleFilter, handleSale);
+      marketContract.off(auctionEndedFilter, handleAuctionEnded);
     };
   }, [marketContract]);
 
