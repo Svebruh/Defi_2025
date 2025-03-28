@@ -8,7 +8,7 @@ function WithdrawFunds({ marketContract, account }) {
   const [pending, setPending] = useState("0");
 
   // Fetch the pending withdrawal amount for the connected account
-  const fetchPendingWithdrawal = async () => {
+  const fetchPendingWithdrawal = React.useCallback(async () => {
     if (!marketContract || !account) return;
     try {
       const amount = await marketContract.pendingWithdrawals(account);
@@ -16,7 +16,7 @@ function WithdrawFunds({ marketContract, account }) {
     } catch (error) {
       console.error("Error fetching pending withdrawal:", error);
     }
-  };
+  }, [marketContract, account]);
 
   const handleWithdraw = async () => {
     if (!marketContract) return;
@@ -69,7 +69,7 @@ function WithdrawFunds({ marketContract, account }) {
       marketContract.off(saleFilter, handleSale);
       marketContract.off(auctionEndedFilter, handleAuctionEnded);
     };
-  }, [marketContract]);
+  }, [marketContract, fetchPendingWithdrawal]);
 
   return (
     <Box>
