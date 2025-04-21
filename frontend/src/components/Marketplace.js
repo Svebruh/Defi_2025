@@ -19,15 +19,13 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
 
       // Combine events with a type tag
       let allEvents = [];
-      listedEvents.forEach((event) => {
-        allEvents.push({ type: "Listed", event });
-      });
-      saleEvents.forEach((event) => {
-        allEvents.push({ type: "Sale", event });
-      });
-      auctionEndedEvents.forEach((event) => {
-        allEvents.push({ type: "AuctionEnded", event });
-      });
+      listedEvents.forEach((event) =>
+        allEvents.push({ type: "Listed", event })
+      );
+      saleEvents.forEach((event) => allEvents.push({ type: "Sale", event }));
+      auctionEndedEvents.forEach((event) =>
+        allEvents.push({ type: "AuctionEnded", event })
+      );
 
       // Sort events by blockNumber (oldest first)
       allEvents.sort((a, b) => a.event.blockNumber - b.event.blockNumber);
@@ -48,7 +46,7 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
           tokenId: item.event.args.tokenId.toString(),
           price: ethers.formatEther(item.event.args.price),
           isAuction: item.event.args.isAuction,
-          auctionEnd: Number(item.event.args.auctionEnd), // Convert BigInt to Number
+          auctionEnd: Number(item.event.args.auctionEnd),
         }));
 
       setListings(activeListings);
@@ -62,12 +60,14 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
       const handleNewEvent = () => fetchListings();
       marketContract.on("Listed", handleNewEvent);
       marketContract.on("Sale", handleNewEvent);
-      marketContract.on("Bid", handleNewEvent);
+      marketContract.on("BidCommitted", handleNewEvent);
+      marketContract.on("BidRevealed", handleNewEvent);
       marketContract.on("AuctionEnded", handleNewEvent);
       return () => {
         marketContract.removeListener("Listed", handleNewEvent);
         marketContract.removeListener("Sale", handleNewEvent);
-        marketContract.removeListener("Bid", handleNewEvent);
+        marketContract.removeListener("BidCommitted", handleNewEvent);
+        marketContract.removeListener("BidRevealed", handleNewEvent);
         marketContract.removeListener("AuctionEnded", handleNewEvent);
       };
     }
@@ -91,7 +91,7 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
               />
             ) : (
               <FixedPriceListingItem
-                key={index} // why do we need a key here?
+                key={index}
                 listing={listing}
                 marketContract={marketContract}
                 refreshListings={fetchListings}

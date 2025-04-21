@@ -11,6 +11,7 @@ import Marketplace from "./components/Marketplace";
 import MintCard from "./components/MintCard";
 import Section from "./components/Section";
 import WithdrawFunds from "./components/WithdrawFunds";
+import PauseControls from "./components/PauseControls";
 
 // Replace with your deployed contract addresses
 const nftAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
@@ -62,9 +63,9 @@ function App() {
         sx={{
           p: 4,
           mb: 4,
-          borderRadius: 4, // Extra rounding for the main header
+          borderRadius: 4,
           textAlign: "center",
-          backgroundColor: "#FFFFFF", // White background for the header
+          backgroundColor: "#FFFFFF",
         }}
       >
         <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
@@ -94,9 +95,11 @@ function App() {
         </>
       )}
 
-      {/* Show ListCard + Marketplace + Withdraw if Market contract is loaded */}
+      {/* Show PauseControls and ListCard + Marketplace + Withdraw if Market contract is loaded */}
       {marketContract && (
         <>
+          <PauseControls marketContract={marketContract} account={account} />
+
           <Section title="List Your Card">
             <ListCard
               marketContract={marketContract}

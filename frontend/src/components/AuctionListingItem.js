@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { ethers, parseEther } from "ethers";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 function AuctionListingItem({
   listing,
@@ -17,10 +17,25 @@ function AuctionListingItem({
   nftContract,
 }) {
   const [bidValue, setBidValue] = useState("");
+  const [salt, setSalt] = useState("");
   const [status, setStatus] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
   const [currentHighestBid, setCurrentHighestBid] = useState("0");
   const [metadata, setMetadata] = useState(null);
+
+  // Function to fetch auction data (highest bid)
+  const fetchAuctionData = useCallback(async () => {
+    if (!marketContract) return;
+    try {
+      const updated = await marketContract.listings(
+        nftAddress,
+        listing.tokenId
+      );
+      setCurrentHighestBid(ethers.formatEther(updated.highestBid));
+    } catch (err) {
+      console.error("Error fetching auction data:", err);
+    }
+  }, [marketContract, nftAddress, listing.tokenId]);
 
   // Update the countdown timer
   useEffect(() => {
@@ -34,57 +49,74 @@ function AuctionListingItem({
     return () => clearInterval(interval);
   }, [listing.auctionEnd]);
 
-  // Fetch auction data (highest bid) from the marketplace contract
-  const fetchAuctionData = async () => {
-    try {
-      const updatedListing = await marketContract.listings(
-        nftAddress,
-        listing.tokenId
-      );
-      setCurrentHighestBid(ethers.formatEther(updatedListing.highestBid));
-    } catch (error) {
-      console.error("Error fetching auction data:", error);
+  // Fetch auction data on mount and when listing or contract changes
+  useEffect(() => {
+    if (listing.isAuction) {
+      fetchAuctionData();
     }
-  };
+  }, [listing.isAuction, fetchAuctionData]);
 
-  // Fetch NFT metadata for the given tokenId using nftContract
+  // Fetch NFT metadata
   useEffect(() => {
     const fetchMetadata = async () => {
-      if (!nftContract || !listing.tokenId) return;
+      if (!nftContract) return;
       try {
-        const tokenURI = await nftContract.tokenURI(listing.tokenId);
-        const response = await fetch(tokenURI);
-        const data = await response.json();
+        const uri = await nftContract.tokenURI(listing.tokenId);
+        const res = await fetch(uri);
+        const data = await res.json();
         setMetadata(data);
-      } catch (error) {
-        console.error("Error fetching NFT metadata:", error);
+      } catch (err) {
+        console.error("Error fetching NFT metadata:", err);
       }
     };
     fetchMetadata();
   }, [nftContract, listing.tokenId]);
 
-  useEffect(() => {
-    if (listing.isAuction) {
-      fetchAuctionData();
+  // Commit bid: hash and send commitment
+  const handleCommitBid = async () => {
+    if (!bidValue || !salt) {
+      setStatus("Enter bid and salt.");
+      return;
     }
-  }, [listing, marketContract]);
-
-  const handleBid = async () => {
     try {
-      setStatus("Placing bid...");
-      const tx = await marketContract.bid(listing.tokenId, {
-        value: parseEther(bidValue),
-      });
+      setStatus("Committing bid...");
+      const bidWei = parseEther(bidValue);
+      const commitHash = ethers.solidityPackedKeccak256(
+        ["uint256", "string"],
+        [bidWei, salt]
+      );
+      const tx = await marketContract.commitBid(listing.tokenId, commitHash);
       await tx.wait();
-      setStatus("Bid placed successfully!");
-      fetchAuctionData();
-      refreshListings();
-    } catch (error) {
-      console.error("Error placing bid:", error);
-      setStatus("Bid failed.");
+      setStatus("Bid committed. Reveal after auction ends.");
+    } catch (err) {
+      console.error(err);
+      setStatus("Commit failed.");
     }
   };
 
+  // Reveal bid after auction end
+  const handleRevealBid = async () => {
+    if (!bidValue || !salt) {
+      setStatus("Enter bid and salt.");
+      return;
+    }
+    try {
+      setStatus("Revealing bid...");
+      const bidWei = parseEther(bidValue);
+      const tx = await marketContract.revealBid(listing.tokenId, bidWei, salt, {
+        value: bidWei,
+      });
+      await tx.wait();
+      setStatus("Bid revealed!");
+      fetchAuctionData();
+      refreshListings();
+    } catch (err) {
+      console.error(err);
+      setStatus("Reveal failed.");
+    }
+  };
+
+  // End auction
   const handleEndAuction = async () => {
     try {
       setStatus("Finalizing auction...");
@@ -92,9 +124,9 @@ function AuctionListingItem({
       await tx.wait();
       setStatus("Auction finalized!");
       refreshListings();
-    } catch (error) {
-      console.error("Error ending auction:", error);
-      setStatus("Ending auction failed.");
+    } catch (err) {
+      console.error(err);
+      setStatus("Finalize failed.");
     }
   };
 
@@ -104,17 +136,16 @@ function AuctionListingItem({
         mb: 2,
         border: "1px solid #444",
         borderRadius: 2,
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
       }}
     >
       <CardContent>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {/* Display the NFT image if available */}
           {metadata?.image ? (
             <img
               src={metadata.image}
-              alt={metadata.name || `Token #${listing.tokenId}`}
-              style={{ width: "80px", borderRadius: "8px" }}
+              alt={metadata.name}
+              style={{ width: 80, borderRadius: 8 }}
             />
           ) : (
             <Box
@@ -131,7 +162,6 @@ function AuctionListingItem({
               <Typography variant="caption">No Image</Typography>
             </Box>
           )}
-
           <Box>
             <Typography variant="subtitle1">
               <strong>Token ID:</strong> {listing.tokenId}
@@ -145,33 +175,49 @@ function AuctionListingItem({
               </Typography>
             ) : (
               <Typography variant="body2">
-                <strong>Current highest bid:</strong> {currentHighestBid} ETH
+                <strong>Highest bid:</strong> {currentHighestBid} ETH
               </Typography>
             )}
             <Typography variant="body2">
-              <strong>Auction ends in:</strong>{" "}
-              {timeLeft > 0 ? `${timeLeft} seconds` : "Auction ended"}
+              <strong>Ends in:</strong>{" "}
+              {timeLeft > 0 ? `${timeLeft}s` : "Ended"}
             </Typography>
           </Box>
         </Box>
 
-        {timeLeft > 0 ? (
-          <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
-            <TextField
-              label="Bid amount (ETH)"
-              size="small"
-              value={bidValue}
-              onChange={(e) => setBidValue(e.target.value)}
-            />
-            <Button variant="contained" onClick={handleBid}>
-              Place Bid
+        <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <TextField
+            label="Bid (ETH)"
+            size="small"
+            value={bidValue}
+            onChange={(e) => setBidValue(e.target.value)}
+          />
+          <TextField
+            label="Salt"
+            size="small"
+            value={salt}
+            onChange={(e) => setSalt(e.target.value)}
+          />
+          {timeLeft > 0 ? (
+            <Button variant="contained" onClick={handleCommitBid}>
+              Commit
             </Button>
-          </Box>
-        ) : (
-          <Button variant="contained" onClick={handleEndAuction} sx={{ mt: 2 }}>
-            End Auction
-          </Button>
-        )}
+          ) : (
+            <>
+              <Button variant="contained" onClick={handleRevealBid}>
+                Reveal
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleEndAuction}
+              >
+                End Auction
+              </Button>
+            </>
+          )}
+        </Box>
+
         {status && (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             {status}
