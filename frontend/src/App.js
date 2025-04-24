@@ -49,33 +49,38 @@ function App() {
   }, [marketContract]);
 
   async function connectWallet() {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-
-        setAccount(accounts[0]);
-        const nft = new ethers.Contract(
-          nftAddress,
-          PokemonCardNFTArtifact.abi,
-          signer
-        );
-        setNftContract(nft);
-
-        const market = new ethers.Contract(
-          marketAddress,
-          PokemonCardMarketArtifact.abi,
-          signer
-        );
-        setMarketContract(market);
-      } catch (error) {
-        console.error("Error connecting wallet:", error);
-      }
-    } else {
+    if (!window.ethereum) {
       alert("Please install MetaMask!");
+      return;
+    }
+    // If multiple providers, pick MetaMask
+    const providerEngine =
+      window.ethereum.providers && Array.isArray(window.ethereum.providers)
+        ? window.ethereum.providers.find((p) => p.isMetaMask) || window.ethereum
+        : window.ethereum;
+    try {
+      const accounts = await providerEngine.request({
+        method: "eth_requestAccounts",
+      });
+      const provider = new ethers.BrowserProvider(providerEngine);
+      const signer = await provider.getSigner();
+
+      setAccount(accounts[0]);
+      const nft = new ethers.Contract(
+        nftAddress,
+        PokemonCardNFTArtifact.abi,
+        signer
+      );
+      setNftContract(nft);
+
+      const market = new ethers.Contract(
+        marketAddress,
+        PokemonCardMarketArtifact.abi,
+        signer
+      );
+      setMarketContract(market);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
     }
   }
 
