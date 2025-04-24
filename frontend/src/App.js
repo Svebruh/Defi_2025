@@ -1,6 +1,6 @@
 import { Button, Container, Paper, Typography } from "@mui/material";
 import { ethers } from "ethers";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import PokemonCardMarketArtifact from "./abi/PokemonCardMarket.json";
 import PokemonCardNFTArtifact from "./abi/PokemonCardNFT.json";
@@ -19,9 +19,34 @@ const marketAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 function App() {
   const [account, setAccount] = useState(null);
-  const [provider, setProvider] = useState(null);
   const [nftContract, setNftContract] = useState(null);
   const [marketContract, setMarketContract] = useState(null);
+  const [ownerAddress, setOwnerAddress] = useState(null);
+  const [paused, setPaused] = useState(false);
+
+  const isOwner = account && ownerAddress === account.toLowerCase();
+
+  // Fetch owner and paused state, subscribe to pause/unpause
+  useEffect(() => {
+    if (!marketContract) return;
+    let pausedListener, unpausedListener;
+    (async () => {
+      const owner = await marketContract.owner();
+      setOwnerAddress(owner.toLowerCase());
+      const isPaused = await marketContract.paused();
+      setPaused(isPaused);
+      pausedListener = () => setPaused(true);
+      unpausedListener = () => setPaused(false);
+      marketContract.on("Paused", pausedListener);
+      marketContract.on("Unpaused", unpausedListener);
+    })();
+    return () => {
+      if (marketContract) {
+        marketContract.off("Paused", pausedListener);
+        marketContract.off("Unpaused", unpausedListener);
+      }
+    };
+  }, [marketContract]);
 
   async function connectWallet() {
     if (window.ethereum) {
@@ -32,9 +57,7 @@ function App() {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
 
-        setProvider(provider);
         setAccount(accounts[0]);
-
         const nft = new ethers.Contract(
           nftAddress,
           PokemonCardNFTArtifact.abi,
@@ -85,9 +108,11 @@ function App() {
       {/* Show Mint + Inventory if NFT contract is loaded */}
       {nftContract && account && (
         <>
-          <Section title="Mint Pokémon Cards">
-            <MintCard nftContract={nftContract} account={account} />
-          </Section>
+          {isOwner && (
+            <Section title="Mint Pokémon Cards">
+              <MintCard nftContract={nftContract} account={account} />
+            </Section>
+          )}
 
           <Section title="My Inventory">
             <Inventory nftContract={nftContract} account={account} />
@@ -95,30 +120,53 @@ function App() {
         </>
       )}
 
-      {/* Show PauseControls and ListCard + Marketplace + Withdraw if Market contract is loaded */}
+      {/* Admin and marketplace sections */}
       {marketContract && (
         <>
-          <PauseControls marketContract={marketContract} account={account} />
-
-          <Section title="List Your Card">
-            <ListCard
+          {isOwner && (
+            <PauseControls
               marketContract={marketContract}
-              nftContract={nftContract}
-              marketAddress={marketAddress}
+              account={account}
+              paused={paused}
             />
-          </Section>
+          )}
 
-          <Section title="Marketplace Listings">
-            <Marketplace
-              marketContract={marketContract}
-              nftContract={nftContract}
-              nftAddress={nftAddress}
-            />
-          </Section>
+          {paused && (
+            <Paper sx={{ p: 2, mb: 3, backgroundColor: "#fff3cd" }}>
+              <Typography color="warning.main" align="center">
+                ⚠️ Marketplace is currently <strong>PAUSED</strong> by the
+                owner.
+              </Typography>
+            </Paper>
+          )}
 
-          <Section title="Withdraw Funds">
-            <WithdrawFunds marketContract={marketContract} account={account} />
-          </Section>
+          {!paused && (
+            <>
+              <Section title="List Your Card">
+                <ListCard
+                  marketContract={marketContract}
+                  nftContract={nftContract}
+                  marketAddress={marketAddress}
+                />
+              </Section>
+
+              <Section title="Marketplace Listings">
+                <Marketplace
+                  marketContract={marketContract}
+                  nftContract={nftContract}
+                  nftAddress={nftAddress}
+                  account={account}
+                />
+              </Section>
+
+              <Section title="Withdraw Funds">
+                <WithdrawFunds
+                  marketContract={marketContract}
+                  account={account}
+                />
+              </Section>
+            </>
+          )}
         </>
       )}
     </Container>

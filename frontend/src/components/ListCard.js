@@ -33,12 +33,21 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
         setStatus("NFT approved. Proceeding with listing...");
       }
 
+      // Ensure price is provided
+      if (!price) {
+        setStatus("Please enter a price or starting bid.");
+        return;
+      }
+
       const priceInWei = parseEther(price);
+      const duration = isAuction ? auctionDuration : 0;
+
+      setStatus(`Listing card (${isAuction ? "auction" : "fixed-price"})...`);
       const tx = await marketContract.listItem(
         tokenId,
         priceInWei,
         isAuction,
-        isAuction ? auctionDuration : 0
+        duration
       );
       await tx.wait();
       setStatus("Card listed successfully!");
@@ -60,16 +69,14 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
           required
           sx={{ mb: 2, mr: 2 }}
         />
-        {!isAuction && (
-          <TextField
-            label="Price (ETH)"
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            required
-            sx={{ mb: 2, mr: 2 }}
-          />
-        )}
+        <TextField
+          label={isAuction ? "Starting Bid (ETH)" : "Price (ETH)"}
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          required
+          sx={{ mb: 2, mr: 2 }}
+        />
         <FormControlLabel
           control={
             <Checkbox

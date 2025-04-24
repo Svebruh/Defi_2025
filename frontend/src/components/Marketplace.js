@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import AuctionListingItem from "./AuctionListingItem";
 import FixedPriceListingItem from "./FixedPriceListingItem";
 
-function Marketplace({ marketContract, nftContract, nftAddress }) {
+function Marketplace({ marketContract, nftContract, nftAddress, account }) {
   const [listings, setListings] = useState([]);
 
   const fetchListings = React.useCallback(async () => {
@@ -79,19 +79,20 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
         <Typography>No listings available.</Typography>
       ) : (
         <Box>
-          {listings.map((listing, index) =>
+          {listings.map((listing, idx) =>
             listing.isAuction ? (
               <AuctionListingItem
-                key={index}
+                key={idx}
                 listing={listing}
                 marketContract={marketContract}
                 refreshListings={fetchListings}
                 nftAddress={nftAddress}
                 nftContract={nftContract}
+                account={account}
               />
             ) : (
               <FixedPriceListingItem
-                key={index}
+                key={idx}
                 listing={listing}
                 marketContract={marketContract}
                 refreshListings={fetchListings}
@@ -101,7 +102,7 @@ function Marketplace({ marketContract, nftContract, nftAddress }) {
           )}
         </Box>
       )}
-      <Box textAlign="center" sx={{ mt: 0 }}>
+      <Box textAlign="center" sx={{ mt: 2 }}>
         <Button variant="contained" onClick={fetchListings}>
           Refresh Listings
         </Button>

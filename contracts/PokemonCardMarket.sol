@@ -84,9 +84,13 @@ contract PokemonCardMarket is ReentrancyGuard, Pausable, Ownable {
         listing.price = price;
         listing.isAuction = isAuction;
         listing.active = true;
+
         if (isAuction) {
             listing.auctionEnd = block.timestamp + auctionDuration;
+            listing.highestBid = 0;
+            listing.highestBidder = address(0);
         }
+
         emit Listed(
             msg.sender,
             address(nftContract),
@@ -132,6 +136,7 @@ contract PokemonCardMarket is ReentrancyGuard, Pausable, Ownable {
         require(listing.isAuction, "Not an auction");
         require(block.timestamp >= listing.auctionEnd, "Auction still active");
         require(msg.value == bidAmount, "Must deposit bid amount");
+        require(bidAmount >= listing.price, "Bid below starting bid");
 
         bytes32 computed = keccak256(abi.encodePacked(bidAmount, salt));
         require(
@@ -154,6 +159,7 @@ contract PokemonCardMarket is ReentrancyGuard, Pausable, Ownable {
     function endAuction(uint256 tokenId) external nonReentrant whenNotPaused {
         Listing storage listing = listings[address(nftContract)][tokenId];
         require(listing.active, "Item not active");
+        require(msg.sender == listing.seller, "Only seller can end auction");
         require(listing.isAuction, "Not an auction");
         require(block.timestamp >= listing.auctionEnd, "Auction not ended");
 

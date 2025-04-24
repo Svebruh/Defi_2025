@@ -15,6 +15,7 @@ function AuctionListingItem({
   refreshListings,
   nftAddress,
   nftContract,
+  account,
 }) {
   const [bidValue, setBidValue] = useState("");
   const [salt, setSalt] = useState("");
@@ -23,7 +24,7 @@ function AuctionListingItem({
   const [currentHighestBid, setCurrentHighestBid] = useState("0");
   const [metadata, setMetadata] = useState(null);
 
-  // Function to fetch auction data (highest bid)
+  // Fetch auction data (highest bid)
   const fetchAuctionData = useCallback(async () => {
     if (!marketContract) return;
     try {
@@ -37,7 +38,32 @@ function AuctionListingItem({
     }
   }, [marketContract, nftAddress, listing.tokenId]);
 
-  // Update the countdown timer
+  // Initial data load
+  useEffect(() => {
+    if (listing.isAuction) fetchAuctionData();
+  }, [listing.isAuction, fetchAuctionData]);
+
+  // Live update when bids are revealed
+  useEffect(() => {
+    const handleBidRevealed = (bidder, nftAddr, tokenId, bid) => {
+      if (
+        nftAddr.toLowerCase() === nftAddress.toLowerCase() &&
+        tokenId.toString() === listing.tokenId
+      ) {
+        fetchAuctionData();
+      }
+    };
+    if (marketContract) {
+      marketContract.on("BidRevealed", handleBidRevealed);
+    }
+    return () => {
+      if (marketContract) {
+        marketContract.off("BidRevealed", handleBidRevealed);
+      }
+    };
+  }, [marketContract, nftAddress, listing.tokenId, fetchAuctionData]);
+
+  // Countdown timer
   useEffect(() => {
     const updateTimer = () => {
       const now = Math.floor(Date.now() / 1000);
@@ -48,13 +74,6 @@ function AuctionListingItem({
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [listing.auctionEnd]);
-
-  // Fetch auction data on mount and when listing or contract changes
-  useEffect(() => {
-    if (listing.isAuction) {
-      fetchAuctionData();
-    }
-  }, [listing.isAuction, fetchAuctionData]);
 
   // Fetch NFT metadata
   useEffect(() => {
@@ -72,15 +91,20 @@ function AuctionListingItem({
     fetchMetadata();
   }, [nftContract, listing.tokenId]);
 
-  // Commit bid: hash and send commitment
+  // Commit bid: do not allow bid below starting bid
   const handleCommitBid = async () => {
     if (!bidValue || !salt) {
       setStatus("Enter bid and salt.");
       return;
     }
     try {
-      setStatus("Committing bid...");
       const bidWei = parseEther(bidValue);
+      const startingWei = parseEther(listing.price);
+      if (bidWei < startingWei) {
+        setStatus("Bid must be at least the starting bid.");
+        return;
+      }
+      setStatus("Committing bid...");
       const commitHash = ethers.solidityPackedKeccak256(
         ["uint256", "string"],
         [bidWei, salt]
@@ -94,7 +118,7 @@ function AuctionListingItem({
     }
   };
 
-  // Reveal bid after auction end
+  // Reveal bid
   const handleRevealBid = async () => {
     if (!bidValue || !salt) {
       setStatus("Enter bid and salt.");
@@ -129,6 +153,9 @@ function AuctionListingItem({
       setStatus("Finalize failed.");
     }
   };
+
+  const isSeller =
+    account && account.toLowerCase() === listing.seller.toLowerCase();
 
   return (
     <Card
@@ -169,13 +196,12 @@ function AuctionListingItem({
             <Typography variant="body2">
               <strong>Seller:</strong> {listing.seller}
             </Typography>
-            {currentHighestBid === "0" ? (
+            <Typography variant="body2">
+              <strong>Starting bid:</strong> {listing.price} ETH
+            </Typography>
+            {parseFloat(currentHighestBid) >= parseFloat(listing.price) && (
               <Typography variant="body2">
-                <strong>Starting bid:</strong> {listing.price} ETH
-              </Typography>
-            ) : (
-              <Typography variant="body2">
-                <strong>Highest bid:</strong> {currentHighestBid} ETH
+                <strong>Current highest bid:</strong> {currentHighestBid} ETH
               </Typography>
             )}
             <Typography variant="body2">
@@ -207,13 +233,15 @@ function AuctionListingItem({
               <Button variant="contained" onClick={handleRevealBid}>
                 Reveal
               </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleEndAuction}
-              >
-                End Auction
-              </Button>
+              {isSeller && (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleEndAuction}
+                >
+                  End Auction
+                </Button>
+              )}
             </>
           )}
         </Box>
