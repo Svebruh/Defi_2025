@@ -1,11 +1,12 @@
 // src/Inventory.js
 import { Box, Button, Typography } from "@mui/material";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 function Inventory({ nftContract, account }) {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Fetch the inventory of NFTs owned by the connected account
   const fetchInventory = useCallback(async () => {
     if (!nftContract || !account) return;
     setLoading(true);
@@ -82,7 +83,6 @@ function Inventory({ nftContract, account }) {
                 boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
               }}
             >
-              {/* Show image if available */}
               {card.metadata?.image ? (
                 <img
                   src={card.metadata.image}

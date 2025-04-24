@@ -16,6 +16,7 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
   const [auctionDuration, setAuctionDuration] = useState("");
   const [status, setStatus] = useState("");
 
+  // Handle listing a card
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!marketContract || !nftContract) {
@@ -33,7 +34,6 @@ function ListCard({ marketContract, nftContract, marketAddress }) {
         setStatus("NFT approved. Proceeding with listing...");
       }
 
-      // Ensure price is provided
       if (!price) {
         setStatus("Please enter a price or starting bid.");
         return;

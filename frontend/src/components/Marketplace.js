@@ -55,6 +55,7 @@ function Marketplace({ marketContract, nftContract, nftAddress, account }) {
     }
   }, [marketContract]);
 
+  // Initial load & update on dependency changes
   useEffect(() => {
     if (marketContract) {
       const handleNewEvent = () => fetchListings();

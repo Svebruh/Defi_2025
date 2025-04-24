@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { ethers, parseEther } from "ethers";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 function AuctionListingItem({
   listing,
@@ -91,7 +91,7 @@ function AuctionListingItem({
     fetchMetadata();
   }, [nftContract, listing.tokenId]);
 
-  // Commit bid: do not allow bid below starting bid
+  // Commit bid
   const handleCommitBid = async () => {
     if (!bidValue || !salt) {
       setStatus("Enter bid and salt.");

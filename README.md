@@ -35,7 +35,7 @@ This decentralized application (dApp) allows users to mint, list, and trade Pok�
 ## Prerequisites
 
 - Node.js >= 16.x and npm/yarn
-- Chrome or Firefox with MetaMask extension installed
+- Firefox with MetaMask extension installed
 - Git
 
 ## Setup & Installation
@@ -126,6 +126,7 @@ Covers:
   - **PauseControls** (owner only)
   - **Marketplace**: listens to `Listed`, `Sale`, `BidCommitted`, `BidRevealed`, `AuctionEnded` events for live updates.
   - **AuctionListingItem**: shows starting bid, live highest bid, countdown, commit/reveal inputs, and seller-only “End Auction”.
+  - **FixedPriceListingItem**: renders fixed-price sale listings with price details and a “Buy” button that updates on Sale events.
   - **WithdrawFunds**: displays and pulls pending balances.
 - **Styling**: MUI
 
@@ -146,20 +147,13 @@ Covers:
   {
     "name": "Pikachu",
     "description": "Electric-type Pokémon",
-    "image": "https://yourdomain.com/images/Pikachu.png",
+    "image": "https://sven.bruhin.biz/...",
     "attributes": [ … ]
   }
   ```
-- **Images** hosted on your website; metadata’s `image` points to the absolute URL.
+- **Images** hosted on my website; metadata’s `image` points to the absolute URL.
 - When minting, use the JSON URI (e.g. `"/TokenURI/Pikachu.json"` served by React).
 
 ## AI Tools Used
 
-- **ChatGPT** for iterative code assistance (Solidity debugging, React hooks, README drafting).
-
-## Optional Enhancements
-
-- IPFS for decentralized metadata storage
-- Dutch auctions or batch trading
-- Advanced filtering & search in marketplace
-- Mobile responsive design
+- **ChatGPT** for iterative code assistance

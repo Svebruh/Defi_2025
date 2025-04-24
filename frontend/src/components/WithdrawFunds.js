@@ -1,4 +1,3 @@
-// src/WithdrawFunds.js
 import { Box, Button, Typography } from "@mui/material";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
@@ -18,6 +17,7 @@ function WithdrawFunds({ marketContract, account }) {
     }
   }, [marketContract, account]);
 
+  // handle withdrawal
   const handleWithdraw = async () => {
     if (!marketContract) return;
     try {
@@ -33,6 +33,7 @@ function WithdrawFunds({ marketContract, account }) {
     }
   };
 
+  // Initial load & update on dependency changes
   useEffect(() => {
     if (!marketContract) return;
 

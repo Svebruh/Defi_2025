@@ -1,6 +1,5 @@
-// src/PauseControls.js
-import React, { useEffect, useState } from "react";
-import { Button, Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
+import React, { useState } from "react";
 
 export default function PauseControls({ marketContract, account }) {
   const [paused, setPaused] = useState(false);

@@ -1,6 +1,7 @@
+import React, { useState, useEffect } from "react";
 import { Button, Container, Paper, Typography } from "@mui/material";
 import { ethers } from "ethers";
-import React, { useState, useEffect } from "react";
+import detectEthereumProvider from "@metamask/detect-provider";
 
 import PokemonCardMarketArtifact from "./abi/PokemonCardMarket.json";
 import PokemonCardNFTArtifact from "./abi/PokemonCardNFT.json";
@@ -31,10 +32,18 @@ function App() {
     if (!marketContract) return;
     let pausedListener, unpausedListener;
     (async () => {
-      const owner = await marketContract.owner();
-      setOwnerAddress(owner.toLowerCase());
-      const isPaused = await marketContract.paused();
-      setPaused(isPaused);
+      try {
+        const owner = await marketContract.owner();
+        setOwnerAddress(owner.toLowerCase());
+      } catch (err) {
+        console.error("Error fetching owner:", err);
+      }
+      try {
+        const isPausedVal = await marketContract.paused();
+        setPaused(isPausedVal);
+      } catch (err) {
+        console.error("Error fetching paused state:", err);
+      }
       pausedListener = () => setPaused(true);
       unpausedListener = () => setPaused(false);
       marketContract.on("Paused", pausedListener);
@@ -48,21 +57,29 @@ function App() {
     };
   }, [marketContract]);
 
-  async function connectWallet() {
-    if (!window.ethereum) {
-      alert("Please install MetaMask!");
+  // Connect to MetaMask and instantiate contracts
+  const connectWallet = async () => {
+    // Detect MetaMask provider
+    const providerEngine = await detectEthereumProvider({
+      mustBeMetaMask: true,
+    });
+    if (!providerEngine) {
+      alert("MetaMask not found or inactive. Please enable MetaMask.");
       return;
     }
-    // If multiple providers, pick MetaMask
-    const providerEngine =
-      window.ethereum.providers && Array.isArray(window.ethereum.providers)
-        ? window.ethereum.providers.find((p) => p.isMetaMask) || window.ethereum
-        : window.ethereum;
     try {
       const accounts = await providerEngine.request({
         method: "eth_requestAccounts",
       });
       const provider = new ethers.BrowserProvider(providerEngine);
+      const network = await provider.getNetwork();
+      // Ensure we're on the Hardhat network
+      if (network.chainId.toString() !== "31337") {
+        alert(
+          `Switch MetaMask to Hardhat network (chainId 31337). Current: ${network.chainId}`
+        );
+        return;
+      }
       const signer = await provider.getSigner();
 
       setAccount(accounts[0]);
@@ -72,7 +89,6 @@ function App() {
         signer
       );
       setNftContract(nft);
-
       const market = new ethers.Contract(
         marketAddress,
         PokemonCardMarketArtifact.abi,
@@ -82,7 +98,7 @@ function App() {
     } catch (error) {
       console.error("Error connecting wallet:", error);
     }
-  }
+  };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -93,7 +109,7 @@ function App() {
           mb: 4,
           borderRadius: 4,
           textAlign: "center",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "#fff",
         }}
       >
         <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
@@ -110,7 +126,6 @@ function App() {
         )}
       </Paper>
 
-      {/* Show Mint + Inventory if NFT contract is loaded */}
       {nftContract && account && (
         <>
           {isOwner && (
@@ -118,14 +133,12 @@ function App() {
               <MintCard nftContract={nftContract} account={account} />
             </Section>
           )}
-
           <Section title="My Inventory">
             <Inventory nftContract={nftContract} account={account} />
           </Section>
         </>
       )}
 
-      {/* Admin and marketplace sections */}
       {marketContract && (
         <>
           {isOwner && (
@@ -135,17 +148,13 @@ function App() {
               paused={paused}
             />
           )}
-
-          {paused && (
+          {paused ? (
             <Paper sx={{ p: 2, mb: 3, backgroundColor: "#fff3cd" }}>
               <Typography color="warning.main" align="center">
-                ⚠️ Marketplace is currently <strong>PAUSED</strong> by the
-                owner.
+                ⚠️ Marketplace is currently <strong>PAUSED</strong>.
               </Typography>
             </Paper>
-          )}
-
-          {!paused && (
+          ) : (
             <>
               <Section title="List Your Card">
                 <ListCard
@@ -154,7 +163,6 @@ function App() {
                   marketAddress={marketAddress}
                 />
               </Section>
-
               <Section title="Marketplace Listings">
                 <Marketplace
                   marketContract={marketContract}
@@ -163,7 +171,6 @@ function App() {
                   account={account}
                 />
               </Section>
-
               <Section title="Withdraw Funds">
                 <WithdrawFunds
                   marketContract={marketContract}

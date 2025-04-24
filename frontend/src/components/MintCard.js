@@ -19,6 +19,7 @@ function MintCard({ nftContract, account }) {
     },
   ];
 
+  // Function to mint a card
   const mintCard = async (tokenURI) => {
     if (!nftContract || !account) {
       alert("Contract instance or account not found.");
