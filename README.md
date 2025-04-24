@@ -30,7 +30,6 @@ This decentralized application (dApp) allows users to mint, list, and trade Pok�
 - **Hardhat** for local development & testing
 - **ethers.js** for on-chain interactions
 - **React** + **Material UI (MUI)** for the frontend
-- **Commit–Reveal** auction design
 - **Local Hardhat Network** (chainId 31337)
 
 ## Prerequisites
@@ -39,36 +38,12 @@ This decentralized application (dApp) allows users to mint, list, and trade Pok�
 - Chrome or Firefox with MetaMask extension installed
 - Git
 
-## Project Structure
-
-```
-root/
-├── contracts/              # Solidity contracts
-│   ├── PokemonCardNFT.sol  # ERC721Enumerable + URIStorage + Ownable
-│   └── PokemonCardMarket.sol  # Marketplace with fixed-price & commit-reveal auctions
-├── scripts/                # Deployment scripts
-│   └── deploy.js
-├── test/                   # Hardhat tests (Mocha/Chai)
-│   └── PokemonCard.test.js
-├── frontend/               # React app
-│   ├── src/
-│   │   ├── abi/            # Compiled ABIs JSON
-│   │   ├── components/     # UI components (Inventory, ListCard, Marketplace, etc.)
-│   │   ├── TokenURI/       # Local metadata JSON files
-│   │   └── App.js
-│   ├── public/
-│   └── package.json
-├── hardhat.config.js       # Hardhat configuration
-├── README.md
-└── LICENSE
-```
-
 ## Setup & Installation
 
 1. **Clone the repo**
    ```bash
-   git clone <your-repo-url>
-   cd <your-repo-folder>
+   git clone https://github.com/Svebruh/Defi_2025.git
+   cd Defi_2025
    ```
 2. **Install dependencies**
    ```bash
@@ -103,7 +78,6 @@ npm start
 
 - Opens the React app at http://localhost:3000
 - Ensure your local Hardhat node (`npx hardhat node`) is running
-- If you change ports, update the `proxy` setting in `frontend/package.json` accordingly
 
 ## Testing
 
@@ -153,7 +127,7 @@ Covers:
   - **Marketplace**: listens to `Listed`, `Sale`, `BidCommitted`, `BidRevealed`, `AuctionEnded` events for live updates.
   - **AuctionListingItem**: shows starting bid, live highest bid, countdown, commit/reveal inputs, and seller-only “End Auction”.
   - **WithdrawFunds**: displays and pulls pending balances.
-- **Styling**: MUI dark mode palette, rounded cards, consistent layout, responsive design.
+- **Styling**: MUI
 
 ## Security Features
 
