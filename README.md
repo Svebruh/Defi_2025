@@ -34,7 +34,7 @@ This decentralized application (dApp) allows users to mint, list, and trade Pok�
 ## Prerequisites
 
 - Node.js >= 16 and npm/yarn
-- Firefox with MetaMask extension installed
+- Firefox or Chrome with MetaMask extension installed
 - Git
 
 ## Setup & Installation
