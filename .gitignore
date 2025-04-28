@@ -148,3 +148,23 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 .vscode/
+
+
+# Hardhat build outputs & caches
+cache/
+artifacts/
+solidity-files-cache.json
+
+# Node.js deps
+node_modules/
+
+# Frontend build & deps
+frontend/node_modules/
+frontend/build/
+
+# Environment / secret files
+.env
+
+# OS / IDE cruft
+.DS_Store
+.vscode/
