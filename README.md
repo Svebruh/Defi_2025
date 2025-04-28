@@ -158,3 +158,5 @@ Covers:
 - **ChatGPT** for iterative code assistance
 
 ## Open Bugs
+
+- Connecting with a wallet, does not work, if multiple wallets are installed
