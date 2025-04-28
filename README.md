@@ -15,6 +15,7 @@
 9. [Security Features](#security-features)
 10. [Metadata & Assets](#metadata--assets)
 11. [AI Tools Used](#ai-tools-used)
+12. [Open Bugs](#open-bugs)
 
 ---
 
@@ -24,7 +25,7 @@ This decentralized application (dApp) allows users to mint, list, and trade Pok�
 
 ## Tech Stack
 
-- **Solidity 0.8.x** with OpenZeppelin Contracts ^4.x
+- **Solidity ^0.8.0** with OpenZeppelin Contracts 4.9
 - **Hardhat** for local development & testing
 - **ethers.js** for on-chain interactions
 - **React** + **Material UI (MUI)** for the frontend
@@ -32,7 +33,7 @@ This decentralized application (dApp) allows users to mint, list, and trade Pok�
 
 ## Prerequisites
 
-- Node.js >= 16.x and npm/yarn
+- Node.js >= 16 and npm/yarn
 - Firefox with MetaMask extension installed
 - Git
 
@@ -155,3 +156,5 @@ Covers:
 ## AI Tools Used
 
 - **ChatGPT** for iterative code assistance
+
+## Open Bugs
